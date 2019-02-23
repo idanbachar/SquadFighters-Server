@@ -17,13 +17,14 @@ namespace BattleRoyaleProjectServer
         private string serverIp;
         private int serverPort;
         private Dictionary<string, TcpClient> clients;
+        private string CurrentConnectedPlayerName;
 
         public Server(string ip, int port)
         {
-
             this.serverIp = ip;
             this.serverPort = port;
             this.clients = new Dictionary<string, TcpClient>();
+            CurrentConnectedPlayerName = string.Empty;
         }
 
         public void Start()
@@ -57,12 +58,11 @@ namespace BattleRoyaleProjectServer
                 TcpClient client = listener.AcceptTcpClient();
                 string clientIp = ((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString();
 
-                if (!clients.ContainsKey(clientIp))
+                if (!clients.ContainsKey(CurrentConnectedPlayerName))
                 {
-
-                    clients.Add(clientIp, client);
-                    new Thread(() => Recieve(clients[clientIp])).Start();
-                    Console.WriteLine(clientIp + " connected to the server.");
+                    AddConnectedPlayer(client);
+                    new Thread(() => Recieve(clients[CurrentConnectedPlayerName])).Start();
+                    Console.WriteLine(CurrentConnectedPlayerName + " connected to the server.");
                 }
                 else
                 {
@@ -71,6 +71,35 @@ namespace BattleRoyaleProjectServer
 
             }
 
+        }
+
+        public void AddConnectedPlayer(TcpClient client)
+        {
+            try
+            {
+                NetworkStream netStream = client.GetStream();
+                byte[] bytes = new byte[1024];
+                netStream.Read(bytes, 0, bytes.Length);
+                string data = Encoding.ASCII.GetString(bytes);
+                string message = data.Substring(0, data.IndexOf("\0"));
+
+                if (message.Contains("Connected"))
+                {
+                    CurrentConnectedPlayerName = message.Split(',')[0];
+                    clients.Add(CurrentConnectedPlayerName, client);
+                }
+
+                if (message != "")
+                    Console.WriteLine("<Client>: " + message);
+                else
+                {
+                    clients.Remove(((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString());
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
         }
 
         public void Recieve(TcpClient client)
@@ -87,7 +116,15 @@ namespace BattleRoyaleProjectServer
                     netStream.Read(bytes, 0, bytes.Length);
                     string data = Encoding.ASCII.GetString(bytes);
                     string message = data.Substring(0, data.IndexOf("\0"));
-                    Console.WriteLine("<Client>: " + message);
+
+                    SendAll(message);
+
+                    if (message != "")
+                        Console.WriteLine("<Client>: " + message);
+                    else
+                    {
+                        clients.Remove(((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString());
+                    }
                 }
                 catch (Exception e)
                 {
@@ -110,16 +147,13 @@ namespace BattleRoyaleProjectServer
 
         public void SendAll(string message)
         {
-
             try
             {
                 foreach (KeyValuePair<string, TcpClient> client in clients)
                 {
-
                     NetworkStream netStream = client.Value.GetStream();
                     byte[] bytes = Encoding.ASCII.GetBytes(message);
                     netStream.Write(bytes, 0, bytes.Length);
-
                 }
             }
             catch (Exception e)
