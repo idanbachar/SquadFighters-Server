@@ -61,8 +61,7 @@ namespace BattleRoyaleProjectServer
                 if (!clients.ContainsKey(CurrentConnectedPlayerName))
                 {
                     AddConnectedPlayer(client);
-                    new Thread(() => Recieve(clients[CurrentConnectedPlayerName])).Start();
-                    Console.WriteLine(CurrentConnectedPlayerName + " connected to the server.");
+                    new Thread(() => Recieve(client)).Start();
                 }
                 else
                 {
@@ -87,14 +86,11 @@ namespace BattleRoyaleProjectServer
                 {
                     CurrentConnectedPlayerName = message.Split(',')[0];
                     clients.Add(CurrentConnectedPlayerName, client);
+                    Console.WriteLine("<Client>: " + CurrentConnectedPlayerName + " Connected.");
+                    CurrentConnectedPlayerName = string.Empty;
                 }
 
-                if (message != "")
-                    Console.WriteLine("<Client>: " + message);
-                else
-                {
-                    clients.Remove(((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString());
-                }
+                SendAll(message);
             }
             catch (Exception e)
             {
@@ -117,7 +113,13 @@ namespace BattleRoyaleProjectServer
                     string data = Encoding.ASCII.GetString(bytes);
                     string message = data.Substring(0, data.IndexOf("\0"));
 
-                    SendAll(message);
+                    SendAll(message, client);
+
+                    if (message.Contains("Connected"))
+                    {
+                        CurrentConnectedPlayerName = message.Split(',')[0];
+                        clients.Add(CurrentConnectedPlayerName, client);
+                    }
 
                     if (message != "")
                         Console.WriteLine("<Client>: " + message);
@@ -125,6 +127,7 @@ namespace BattleRoyaleProjectServer
                     {
                         clients.Remove(((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString());
                     }
+                    Thread.Sleep(50);
                 }
                 catch (Exception e)
                 {
@@ -145,7 +148,7 @@ namespace BattleRoyaleProjectServer
             }
         }
 
-        public void SendAll(string message)
+        public void SendAll(string message, TcpClient blackListedClient = null)
         {
             try
             {
@@ -153,7 +156,11 @@ namespace BattleRoyaleProjectServer
                 {
                     NetworkStream netStream = client.Value.GetStream();
                     byte[] bytes = Encoding.ASCII.GetBytes(message);
-                    netStream.Write(bytes, 0, bytes.Length);
+
+                    if(client.Value != blackListedClient)
+                        netStream.Write(bytes, 0, bytes.Length);
+
+                    Thread.Sleep(50);
                 }
             }
             catch (Exception e)
