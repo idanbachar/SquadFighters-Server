@@ -13,18 +13,20 @@ namespace SquadFightersServer
 {
     public class Server
     {
-        private TcpListener listener;
-        private string serverIp;
-        private int serverPort;
-        private Dictionary<string, TcpClient> clients;
+        private TcpListener Listener;
+        private string ServerIp;
+        private int ServerPort;
+        private Dictionary<string, TcpClient> Clients;
         private string CurrentConnectedPlayerName;
+        private Map Map;
 
         public Server(string ip, int port)
         {
-            this.serverIp = ip;
-            this.serverPort = port;
-            this.clients = new Dictionary<string, TcpClient>();
+            this.ServerIp = ip;
+            this.ServerPort = port;
+            this.Clients = new Dictionary<string, TcpClient>();
             CurrentConnectedPlayerName = string.Empty;
+            Map = new Map();
         }
 
         public void Start()
@@ -32,10 +34,14 @@ namespace SquadFightersServer
 
             try
             {
-                listener = new TcpListener(IPAddress.Parse(serverIp), serverPort);
-                listener.Start();
+                Listener = new TcpListener(IPAddress.Parse(ServerIp), ServerPort);
+                Listener.Start();
+                Console.WriteLine("Server started on ip '" + ServerIp + "' and port '" + ServerPort + ".");
 
-                Console.WriteLine("Server started on ip '" + serverIp + "' and port '" + serverPort + ".");
+                Random rndItem = new Random();
+                for (int i = 0; i < 100; i++)
+                    Map.AddItem((ItemCategory)rndItem.Next(4));
+                 
 
                 new Thread(WaitForConnections).Start();
                 new Thread(Chat).Start();
@@ -55,13 +61,14 @@ namespace SquadFightersServer
             {
 
                 Console.WriteLine("Waiting for connections..");
-                TcpClient client = listener.AcceptTcpClient();
+                TcpClient client = Listener.AcceptTcpClient();
                 string clientIp = ((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString();
 
-                if (!clients.ContainsKey(CurrentConnectedPlayerName))
+                if (!Clients.ContainsKey(CurrentConnectedPlayerName))
                 {
                     AddConnectedPlayer(client);
                     new Thread(() => Recieve(client)).Start();
+                    //new Thread(() => SendItems(client)).Start();
                 }
                 else
                 {
@@ -85,16 +92,47 @@ namespace SquadFightersServer
                 if (message.Contains("Connected"))
                 {
                     CurrentConnectedPlayerName = message.Split(',')[0];
-                    clients.Add(CurrentConnectedPlayerName, client);
+                    Clients.Add(CurrentConnectedPlayerName, client);
                     Console.WriteLine("<Client>: " + CurrentConnectedPlayerName + " Connected.");
                     CurrentConnectedPlayerName = string.Empty;
-                }
 
-                SendAll(message);
+                    SendAll(message, client);
+                }
+                SendItems(client);
+
+
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
+            }
+        }
+
+        public void SendItems(TcpClient client)
+        {
+            while (true)
+            {
+                try
+                {
+                    NetworkStream netStream = client.GetStream();
+                    string itemsString = string.Empty;
+                    foreach (string item in Map.Items)
+                    {
+                        itemsString = item;
+
+                        byte[] bytes = Encoding.ASCII.GetBytes(itemsString);
+                        netStream.Write(bytes, 0, bytes.Length);
+
+                        Thread.Sleep(50);
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+               
+                break;
             }
         }
 
@@ -111,22 +149,16 @@ namespace SquadFightersServer
                     byte[] bytes = new byte[1024];
                     netStream.Read(bytes, 0, bytes.Length);
                     string data = Encoding.ASCII.GetString(bytes);
-                    string message = data.Substring(0, data.IndexOf("\0"));
+                    string message = data; //data.Substring(0, data.IndexOf("\0"));
 
                     SendAll(message, client);
 
                     if (message.Contains("Connected"))
                     {
                         CurrentConnectedPlayerName = message.Split(',')[0];
-                        clients.Add(CurrentConnectedPlayerName, client);
+                        Clients.Add(CurrentConnectedPlayerName, client);
                     }
-
-                    if (message != "")
-                        Console.WriteLine("<Client>: " + message);
-                    else
-                    {
-                        clients.Remove(((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString());
-                    }
+ 
                     Thread.Sleep(50);
                 }
                 catch (Exception e)
@@ -152,7 +184,7 @@ namespace SquadFightersServer
         {
             try
             {
-                foreach (KeyValuePair<string, TcpClient> client in clients)
+                foreach (KeyValuePair<string, TcpClient> client in Clients)
                 {
                     NetworkStream netStream = client.Value.GetStream();
                     byte[] bytes = Encoding.ASCII.GetBytes(message);
