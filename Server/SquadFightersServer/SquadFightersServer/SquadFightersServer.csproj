@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{F74D694D-B3C8-4B9A-9355-7FB2D579543E}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>BattleRoyaleProjectServer</RootNamespace>
-    <AssemblyName>BattleRoyaleProjectServer</AssemblyName>
+    <RootNamespace>SquadFightersServer</RootNamespace>
+    <AssemblyName>SquadFightersServer</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>

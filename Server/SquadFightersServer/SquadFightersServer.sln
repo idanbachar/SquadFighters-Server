@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.421
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BattleRoyaleProjectServer", "BattleRoyaleProjectServer\BattleRoyaleProjectServer.csproj", "{F74D694D-B3C8-4B9A-9355-7FB2D579543E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SquadFightersServer", "SquadFightersServer\SquadFightersServer.csproj", "{F74D694D-B3C8-4B9A-9355-7FB2D579543E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -20,6 +20,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {1696740B-95BC-40D9-A9EC-B31940E169A8}
+		SolutionGuid = {326F5B46-B2CB-4163-AB13-35D52BF4BB4A}
 	EndGlobalSection
 EndGlobal
