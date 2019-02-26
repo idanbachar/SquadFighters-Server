@@ -67,7 +67,7 @@ namespace SquadFightersServer
         public HelmetType GenerateHelmet() { return (HelmetType)(Random.Next(4)); }
         public AmmoType GenerateAmmo() { return (AmmoType)(Random.Next(1, 2)); }
         public FoodType GenerateFood() { return (FoodType)(Random.Next(3)); }
-        public Position GeneratePosition() { return new Position(Random.Next(200, 500), Random.Next(200, 500)); }
+        public Position GeneratePosition() { return new Position(Random.Next(200, Width - 200), Random.Next(200, Height - 200)); }
 
     }
 }
