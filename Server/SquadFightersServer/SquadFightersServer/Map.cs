@@ -10,11 +10,15 @@ namespace SquadFightersServer
     {
         public List<string> Items;
         private Random Random;
+        public int Width;
+        public int Height;
 
         public Map()
         {
             Items = new List<string>();
             Random = new Random();
+            Width = 10000;
+            Height = 10000;
         }
 
         public void AddItem(ItemCategory itemToAdd)

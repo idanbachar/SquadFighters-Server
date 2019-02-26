@@ -19,19 +19,20 @@ namespace SquadFightersServer
         private Dictionary<string, TcpClient> Clients;
         private string CurrentConnectedPlayerName;
         private Map Map;
+        private string GameTitle;
 
         public Server(string ip, int port)
         {
-            this.ServerIp = ip;
-            this.ServerPort = port;
-            this.Clients = new Dictionary<string, TcpClient>();
+            ServerIp = ip;
+            ServerPort = port;
+            Clients = new Dictionary<string, TcpClient>();
             CurrentConnectedPlayerName = string.Empty;
             Map = new Map();
+            GameTitle = "SquadFighters: BattleRoyale";
         }
 
         public void Start()
         {
-
             try
             {
                 Listener = new TcpListener(IPAddress.Parse(ServerIp), ServerPort);
@@ -42,7 +43,6 @@ namespace SquadFightersServer
                 for (int i = 0; i < 100; i++)
                     Map.AddItem((ItemCategory)rndItem.Next(4));
                  
-
                 new Thread(WaitForConnections).Start();
                 new Thread(Chat).Start();
 
@@ -51,15 +51,12 @@ namespace SquadFightersServer
             {
                 Console.WriteLine(e.Message);
             }
-
         }
 
         public void WaitForConnections()
         {
-
             while (true)
             {
-
                 Console.WriteLine("Waiting for connections..");
                 TcpClient client = Listener.AcceptTcpClient();
                 string clientIp = ((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString();
@@ -67,16 +64,14 @@ namespace SquadFightersServer
                 if (!Clients.ContainsKey(CurrentConnectedPlayerName))
                 {
                     AddConnectedPlayer(client);
-                    new Thread(() => Recieve(client)).Start();
-                    new Thread(() => SendItems(client)).Start();
+                    new Thread(() => ReceiveDataFromClient(client)).Start();
+                    new Thread(() => SendItemsDataToClient(client)).Start();
                 }
                 else
                 {
                     Console.WriteLine("You are already connected to the server!");
                 }
-
             }
-
         }
 
         public void AddConnectedPlayer(TcpClient client)
@@ -93,14 +88,11 @@ namespace SquadFightersServer
                 {
                     CurrentConnectedPlayerName = message.Split(',')[0];
                     Clients.Add(CurrentConnectedPlayerName, client);
-                    Console.WriteLine("<Client>: " + CurrentConnectedPlayerName + " Connected.");
+                    Print(CurrentConnectedPlayerName + " has connected to '" + GameTitle + "' server!");
                     CurrentConnectedPlayerName = string.Empty;
 
-                    SendAll(message, client);
+                    SendDataToAllClients(message, client);
                 }
-               // SendItems(client);
-
-
             }
             catch (Exception e)
             {
@@ -108,7 +100,21 @@ namespace SquadFightersServer
             }
         }
 
-        public void SendItems(TcpClient client)
+        public void Print(string data)
+        {
+            Console.WriteLine("<Server>: " + data);
+        }
+
+        public string GetPlayerNameByClient(TcpClient client)
+        {
+            foreach(KeyValuePair<string, TcpClient> otherClient in Clients)
+            {
+                if (client == otherClient.Value) return otherClient.Key;
+            }
+            return string.Empty;
+        }
+
+        public void SendItemsDataToClient(TcpClient client)
         {
             while (true)
             {
@@ -123,6 +129,8 @@ namespace SquadFightersServer
                         byte[] bytes = Encoding.ASCII.GetBytes(itemsString);
                         netStream.Write(bytes, 0, bytes.Length);
 
+                        Print("Sending items data to " + GetPlayerNameByClient(client) + " -> " + itemsString);
+
                         Thread.Sleep(50);
                     }
 
@@ -136,22 +144,19 @@ namespace SquadFightersServer
             }
         }
 
-        public void Recieve(TcpClient client)
+        public void ReceiveDataFromClient(TcpClient client)
         {
-
             while (true)
             {
-
                 try
                 {
-
                     NetworkStream netStream = client.GetStream();
                     byte[] bytes = new byte[1024];
                     netStream.Read(bytes, 0, bytes.Length);
                     string data = Encoding.ASCII.GetString(bytes);
                     string message = data; //data.Substring(0, data.IndexOf("\0"));
 
-                    SendAll(message, client);
+                    SendDataToAllClients(message, client);
 
                     if (message.Contains("Connected"))
                     {
@@ -173,14 +178,13 @@ namespace SquadFightersServer
 
             while (true)
             {
-
                 string message = Console.ReadLine();
-                SendAll(message);
+                SendDataToAllClients(message);
                 Console.WriteLine("<Server>: " + message);
             }
         }
 
-        public void SendAll(string message, TcpClient blackListedClient = null)
+        public void SendDataToAllClients(string message, TcpClient blackListedClient = null)
         {
             try
             {
@@ -200,47 +204,6 @@ namespace SquadFightersServer
                 Console.WriteLine(e.Message);
             }
 
-        }
-
-        public void SendTo(TcpClient client, string message)
-        {
-
-            NetworkStream netStream = client.GetStream();
-            byte[] bytes = Encoding.ASCII.GetBytes(message);
-            netStream.Write(bytes, 0, bytes.Length);
-
-        }
-
-        public byte[] ObjectToByteArray(Object obj)
-        {
-
-            if (obj == null)
-                return null;
-
-            MemoryStream stream = new MemoryStream();
-            BinaryFormatter formatter = new BinaryFormatter();
-            formatter.Serialize(stream, obj);
-            byte[] arr = stream.ToArray();
-            stream.Close();
-            return arr;
-        }
-
-        public object ByteArrayToObject(byte[] Buffer)
-        {
-
-            BinaryFormatter formatter = new BinaryFormatter();
-            MemoryStream stream = new MemoryStream(Buffer);
-            object obj = null;
-            try
-            {
-                obj = formatter.Deserialize(stream);
-            }
-            catch
-            {
-                obj = null;
-            }
-            stream.Close();
-            return obj;
         }
     }
 }
