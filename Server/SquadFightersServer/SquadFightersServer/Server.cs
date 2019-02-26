@@ -68,7 +68,7 @@ namespace SquadFightersServer
                 {
                     AddConnectedPlayer(client);
                     new Thread(() => Recieve(client)).Start();
-                    //new Thread(() => SendItems(client)).Start();
+                    new Thread(() => SendItems(client)).Start();
                 }
                 else
                 {
@@ -98,7 +98,7 @@ namespace SquadFightersServer
 
                     SendAll(message, client);
                 }
-                SendItems(client);
+               // SendItems(client);
 
 
             }
