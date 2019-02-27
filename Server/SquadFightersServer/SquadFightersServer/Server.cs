@@ -40,7 +40,7 @@ namespace SquadFightersServer
                 Console.WriteLine("Server started on ip '" + ServerIp + "' and port '" + ServerPort + ".");
 
                 Random rndItem = new Random();
-                for (int i = 0; i < 100; i++)
+                for (int i = 0; i < Map.Width / 10; i++)
                     Map.AddItem((ItemCategory)rndItem.Next(4));
                  
                 new Thread(WaitForConnections).Start();
