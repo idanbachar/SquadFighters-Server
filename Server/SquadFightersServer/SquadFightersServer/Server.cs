@@ -40,7 +40,7 @@ namespace SquadFightersServer
                 Console.WriteLine("Server started on ip '" + ServerIp + "' and port '" + ServerPort + ".");
 
                 Random rndItem = new Random();
-                for (int i = 0; i < Map.Width / 10; i++)
+                for (int i = 0; i < 500; i++)
                     Map.AddItem((ItemCategory)rndItem.Next(4));
                  
                 new Thread(WaitForConnections).Start();
@@ -61,42 +61,8 @@ namespace SquadFightersServer
                 TcpClient client = Listener.AcceptTcpClient();
                 string clientIp = ((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString();
 
-                if (!Clients.ContainsKey(CurrentConnectedPlayerName))
-                {
-                    AddConnectedPlayer(client);
-                    new Thread(() => ReceiveDataFromClient(client)).Start();
-                    new Thread(() => SendItemsDataToClient(client)).Start();
-                }
-                else
-                {
-                    Console.WriteLine("You are already connected to the server!");
-                }
-            }
-        }
-
-        public void AddConnectedPlayer(TcpClient client)
-        {
-            try
-            {
-                NetworkStream netStream = client.GetStream();
-                byte[] bytes = new byte[1024];
-                netStream.Read(bytes, 0, bytes.Length);
-                string data = Encoding.ASCII.GetString(bytes);
-                string message = data.Substring(0, data.IndexOf("\0"));
-
-                if (message.Contains("Connected"))
-                {
-                    CurrentConnectedPlayerName = message.Split(',')[0];
-                    Clients.Add(CurrentConnectedPlayerName, client);
-                    Print(CurrentConnectedPlayerName + " has connected to '" + GameTitle + "' server!");
-                    CurrentConnectedPlayerName = string.Empty;
-
-                    SendDataToAllClients(message, client);
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
+                new Thread(() => ReceiveDataFromClient(client)).Start();
+ 
             }
         }
 
@@ -139,8 +105,25 @@ namespace SquadFightersServer
                 {
                     Console.WriteLine(e.Message);
                 }
-               
+
+                SendOneDataToClient(client,"Load Items Completed");
                 break;
+            }
+        }
+
+        public void SendOneDataToClient(TcpClient client, string data)
+        {
+            try
+            {
+                NetworkStream netStream = client.GetStream();
+                byte[] bytes = Encoding.ASCII.GetBytes(data);
+                netStream.Write(bytes, 0, bytes.Length);
+
+                Print(data);
+            }
+            catch (Exception)
+            {
+
             }
         }
 
@@ -156,12 +139,24 @@ namespace SquadFightersServer
                     string data = Encoding.ASCII.GetString(bytes);
                     string message = data; //data.Substring(0, data.IndexOf("\0"));
 
-                    SendDataToAllClients(message, client);
-
                     if (message.Contains("Connected"))
                     {
                         CurrentConnectedPlayerName = message.Split(',')[0];
                         Clients.Add(CurrentConnectedPlayerName, client);
+                        Print(CurrentConnectedPlayerName + " has connected to '" + GameTitle + "' server!");
+                        Clients.Add(CurrentConnectedPlayerName, client);
+                        SendDataToAllClients(message, client);
+
+                        CurrentConnectedPlayerName = string.Empty;
+
+                    }
+                    else if(message.Contains("Load Map"))
+                    {
+                        SendItemsDataToClient(client);
+                    }
+                    else if (message.Contains("PlayerName"))
+                    {
+                        SendDataToAllClients(message, client);
                     }
  
                     Thread.Sleep(50);
