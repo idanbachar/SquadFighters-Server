@@ -37,11 +37,10 @@ namespace SquadFightersServer
             {
                 Listener = new TcpListener(IPAddress.Parse(ServerIp), ServerPort);
                 Listener.Start();
-                Console.WriteLine("Server started on ip '" + ServerIp + "' and port '" + ServerPort + ".");
+                Console.WriteLine("Server Started in " + ServerIp + ":" + ServerPort);
 
-                Random rndItem = new Random();
-                for (int i = 0; i < 500; i++)
-                    Map.AddItem((ItemCategory)rndItem.Next(4));
+                //Load Map:
+                Map.Load();
                  
                 new Thread(WaitForConnections).Start();
                 new Thread(Chat).Start();
@@ -88,12 +87,13 @@ namespace SquadFightersServer
                 {
                     NetworkStream netStream = client.GetStream();
                     string itemsString = string.Empty;
-                    foreach (string item in Map.Items)
+                    foreach (KeyValuePair<string, string> item in Map.Items)
                     {
-                        itemsString = item;
+                        itemsString = item.Value;
 
                         byte[] bytes = Encoding.ASCII.GetBytes(itemsString);
                         netStream.Write(bytes, 0, bytes.Length);
+                        netStream.Flush();
 
                         Print("Sending items data to " + GetPlayerNameByClient(client) + " -> " + itemsString);
 
@@ -118,6 +118,7 @@ namespace SquadFightersServer
                 NetworkStream netStream = client.GetStream();
                 byte[] bytes = Encoding.ASCII.GetBytes(data);
                 netStream.Write(bytes, 0, bytes.Length);
+                netStream.Flush();
 
                 Print(data);
             }
@@ -137,7 +138,7 @@ namespace SquadFightersServer
                     byte[] bytes = new byte[1024];
                     netStream.Read(bytes, 0, bytes.Length);
                     string data = Encoding.ASCII.GetString(bytes);
-                    string message = data; //data.Substring(0, data.IndexOf("\0"));
+                    string message = data.Substring(0, data.IndexOf("\0"));
 
                     if (message.Contains("Connected"))
                     {
@@ -158,8 +159,14 @@ namespace SquadFightersServer
                     {
                         SendDataToAllClients(message, client);
                     }
- 
-                    Thread.Sleep(50);
+                    if (message.Contains("Remove Item"))
+                    {
+                        string key = message.Split(',')[1];
+                        Map.Items.Remove(key);
+                        SendDataToAllClients(message, client);
+                    }
+
+                    Thread.Sleep(70);
                 }
                 catch (Exception e)
                 {
@@ -191,6 +198,8 @@ namespace SquadFightersServer
                     if(client.Value != blackListedClient)
                         netStream.Write(bytes, 0, bytes.Length);
 
+
+                    netStream.Flush();
                     Thread.Sleep(50);
                 }
             }

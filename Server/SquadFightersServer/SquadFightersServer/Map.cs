@@ -8,44 +8,61 @@ namespace SquadFightersServer
 {
     public class Map
     {
-        public List<string> Items;
+        public Dictionary<string, string> Items;
         private Random Random;
         public int Width;
         public int Height;
 
         public Map()
         {
-            Items = new List<string>();
+            Items = new Dictionary<string, string>();
             Random = new Random();
-            Width = 10000;
-            Height = 10000;
+            Width = 4000;
+            Height = 4000;
+        }
+
+        public void Load()
+        {
+            Random rndItem = new Random();
+
+            for (int i = 0; i < Width / 10; i++)
+                AddItem((ItemCategory)rndItem.Next(4));
         }
 
         public void AddItem(ItemCategory itemToAdd)
         {
             string item = string.Empty;
+            string itemKey = string.Empty;
 
             switch (itemToAdd)
             {
                 case ItemCategory.Ammo:
                     Position ammoPosition = GeneratePosition();
-                    item = "AddItem=true,ItemCategory=" + (int)ItemCategory.Ammo + ",AmmoType=" + (int)GenerateAmmo() + ",X=" + ammoPosition.X + ",Y=" + ammoPosition.Y;
-                    Items.Add(item);
+                    AmmoType ammoType = GenerateAmmo();
+                    itemKey = itemToAdd.ToString() + "/" + ammoType.ToString() + "/" + Items.Count;
+                    item = "AddItem=true,ItemCategory=" + (int)ItemCategory.Ammo + ",AmmoType=" + (int)ammoType + ",X=" + ammoPosition.X + ",Y=" + ammoPosition.Y + ",Capacity=" + GenerateCapacity(itemToAdd) + ",Key=" + itemKey;
+                    Items.Add(itemKey,item);
                     break;
                 case ItemCategory.Food:
                     Position foodPosition = GeneratePosition();
-                    item = "AddItem=true,ItemCategory=" + (int)ItemCategory.Food + ",FoodType=" + (int)GenerateFood() + ",X=" + foodPosition.X + ",Y=" + foodPosition.Y;
-                    Items.Add(item);
+                    FoodType foodType = GenerateFood();
+                    itemKey = itemToAdd.ToString() + "/" + foodType.ToString() + "/" + Items.Count;
+                    item = "AddItem=true,ItemCategory=" + (int)ItemCategory.Food + ",FoodType=" + (int)foodType + ",X=" + foodPosition.X + ",Y=" + foodPosition.Y + ",Capacity=" + GenerateCapacity(itemToAdd) + ",Key=" + itemKey;
+                    Items.Add(itemKey, item);
                     break;
                 case ItemCategory.Shield:
                     Position shieldPosition = GeneratePosition();
-                    item = "AddItem=true,ItemCategory=" + (int)ItemCategory.Shield + ",ShieldType=" + (int)GenerateShield() + ",X=" + shieldPosition.X + ",Y=" + shieldPosition.Y;
-                    Items.Add(item);
+                    ShieldType shieldType = GenerateShield();
+                    itemKey = itemToAdd.ToString() + "/" + shieldType.ToString() + "/" + Items.Count;
+                    item = "AddItem=true,ItemCategory=" + (int)ItemCategory.Shield + ",ShieldType=" + (int)shieldType + ",X=" + shieldPosition.X + ",Y=" + shieldPosition.Y + ",Capacity=" + 100 + ",Key=" + itemKey;
+                    Items.Add(itemKey, item);
                     break;
                 case ItemCategory.Helmet:
                     Position helmetPosition = GeneratePosition();
-                    item = "AddItem=true,ItemCategory=" + (int)ItemCategory.Helmet + ",HelmetType=" + (int)GenerateHelmet() + ",X=" + helmetPosition.X + ",Y=" + helmetPosition.Y;
-                    Items.Add(item);
+                    HelmetType helmetType = GenerateHelmet();
+                    itemKey = itemToAdd.ToString() + "/" + helmetType.ToString() + "/" + Items.Count;
+                    item = "AddItem=true,ItemCategory=" + (int)ItemCategory.Helmet + ",HelmetType=" + (int)helmetType + ",X=" + helmetPosition.X + ",Y=" + helmetPosition.Y + ",Capacity=" + 100 + ",Key=" + itemKey;
+                    Items.Add(itemKey, item);
                     break;
             }
         }
@@ -62,6 +79,19 @@ namespace SquadFightersServer
                 return ShieldType.Shield_Rare;
             else
                 return ShieldType.Shield_Legendery;
+        }
+
+        public int GenerateCapacity(ItemCategory itemCategory)
+        {
+            switch (itemCategory)
+            {
+                case ItemCategory.Ammo:
+                    return Random.Next(7, 27);
+                case ItemCategory.Food:
+                    return Random.Next(30, 74);
+                default:
+                    return 20;
+            }
         }
 
         public HelmetType GenerateHelmet() { return (HelmetType)(Random.Next(4)); }
