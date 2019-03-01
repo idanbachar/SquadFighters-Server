@@ -28,7 +28,7 @@ namespace SquadFightersServer
             Random rndItem = new Random();
 
             for (int i = 0; i < MaxItems; i++)
-                AddItem((ItemCategory)rndItem.Next(4));
+                AddItem((ItemCategory)rndItem.Next(3));
         }
 
         public void AddItem(ItemCategory itemToAdd)

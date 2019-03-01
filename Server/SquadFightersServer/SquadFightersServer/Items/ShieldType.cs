@@ -8,6 +8,7 @@ namespace SquadFightersServer
 {
     public enum ShieldType
     {
+        None,
         Shield_Level_1,
         Shield_Level_2,
         Shield_Rare,
