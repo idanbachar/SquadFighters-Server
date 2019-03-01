@@ -165,6 +165,14 @@ namespace SquadFightersServer
                         Map.Items.Remove(key);
                         SendDataToAllClients(message, client);
                     }
+                    if (message.Contains("Update Item Capacity"))
+                    {
+                        string receivedKey = message.Split(',')[2];
+                        string receivedCapacityString = "Capacity=" + message.Split(',')[1];
+
+                        Map.Items[receivedKey].Split(',')[5] = receivedCapacityString;
+                        SendDataToAllClients(message, client);                       
+                    }
 
                     Thread.Sleep(70);
                 }
