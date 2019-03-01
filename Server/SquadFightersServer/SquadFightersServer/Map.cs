@@ -18,9 +18,9 @@ namespace SquadFightersServer
         {
             Items = new Dictionary<string, string>();
             Random = new Random();
-            Width = 4000;
-            Height = 4000;
-            MaxItems = Width / 10;
+            Width = 5000;
+            Height = 5000;
+            MaxItems = Width / 20;
         }
 
         public void Load()
