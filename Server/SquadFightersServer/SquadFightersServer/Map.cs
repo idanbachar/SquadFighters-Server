@@ -71,16 +71,18 @@ namespace SquadFightersServer
 
         public ShieldType GenerateShield()
         {
-            int Number = Random.Next(71);
+            int Number = Random.Next(1000);
 
-            if (Number >= 0 && Number <= 10)
+            if (Number >= 0 && Number <= 400)
                 return ShieldType.Shield_Level_1;
-            else if (Number >= 11 && Number <= 20)
+            else if (Number >= 401 && Number <= 700)
                 return ShieldType.Shield_Level_2;
-            else if (Number >= 21 && Number <= 30)
+            else if (Number >= 701 && Number <= 900)
                 return ShieldType.Shield_Rare;
-            else
+            else if(Number >= 901 && Number <= 1000)
                 return ShieldType.Shield_Legendery;
+
+            return ShieldType.Shield_Legendery;
         }
 
         public int GenerateCapacity(ItemCategory itemCategory)
