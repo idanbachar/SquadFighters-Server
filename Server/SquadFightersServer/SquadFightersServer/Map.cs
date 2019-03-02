@@ -69,22 +69,6 @@ namespace SquadFightersServer
             }
         }
 
-        public ShieldType GenerateShield()
-        {
-            int Number = Random.Next(1000);
-
-            if (Number >= 0 && Number <= 400)
-                return ShieldType.Shield_Level_1;
-            else if (Number >= 401 && Number <= 700)
-                return ShieldType.Shield_Level_2;
-            else if (Number >= 701 && Number <= 900)
-                return ShieldType.Shield_Rare;
-            else if(Number >= 901 && Number <= 1000)
-                return ShieldType.Shield_Legendery;
-
-            return ShieldType.Shield_Legendery;
-        }
-
         public int GenerateCapacity(ItemCategory itemCategory)
         {
             switch (itemCategory)
@@ -96,6 +80,22 @@ namespace SquadFightersServer
                 default:
                     return 20;
             }
+        }
+
+        public ShieldType GenerateShield()
+        {
+            int Number = Random.Next(1000);
+
+            if (Number >= 0 && Number <= 400)
+                return ShieldType.Shield_Level_1;
+            else if (Number >= 401 && Number <= 700)
+                return ShieldType.Shield_Level_2;
+            else if (Number >= 701 && Number <= 900)
+                return ShieldType.Shield_Rare;
+            else if (Number >= 901 && Number <= 1000)
+                return ShieldType.Shield_Legendery;
+
+            return ShieldType.Shield_Legendery;
         }
 
         public HelmetType GenerateHelmet() { return (HelmetType)(Random.Next(4)); }

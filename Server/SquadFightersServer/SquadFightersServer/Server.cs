@@ -173,6 +173,10 @@ namespace SquadFightersServer
                         Map.Items[receivedKey].Split(',')[5] = receivedCapacityString;
                         SendDataToAllClients(message, client);                       
                     }
+                    if (message.Contains("ShootData"))
+                    {
+                        SendDataToAllClients(message, client);
+                    }
 
                     Thread.Sleep(70);
                 }
@@ -208,7 +212,7 @@ namespace SquadFightersServer
 
 
                     netStream.Flush();
-                    Thread.Sleep(50);
+                    Thread.Sleep(30);
                 }
             }
             catch (Exception e)
