@@ -177,6 +177,10 @@ namespace SquadFightersServer
                     {
                         SendDataToAllClients(message, client);
                     }
+                    if (message.Contains("Revive=true"))
+                    {
+                        SendDataToAllClients(message, client);
+                    }
 
                     Thread.Sleep(70);
                 }
