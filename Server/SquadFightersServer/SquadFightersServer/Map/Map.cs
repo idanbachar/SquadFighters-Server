@@ -42,28 +42,28 @@ namespace SquadFightersServer
                     Position ammoPosition = GeneratePosition();
                     AmmoType ammoType = GenerateAmmo();
                     itemKey = itemToAdd.ToString() + "/" + ammoType.ToString() + "/" + Items.Count;
-                    item = ServerMethod.DownloadingItem.ToString() + ",ItemCategory=" + (int)ItemCategory.Ammo + ",AmmoType=" + (int)ammoType + ",X=" + ammoPosition.X + ",Y=" + ammoPosition.Y + ",Capacity=" + GenerateCapacity(itemToAdd) + ",Key=" + itemKey + ",MaxItems=" + MaxItems;
+                    item = ServerMethod.DownloadingItem.ToString() + "=true,ItemCategory=" + (int)ItemCategory.Ammo + ",AmmoType=" + (int)ammoType + ",X=" + ammoPosition.X + ",Y=" + ammoPosition.Y + ",Capacity=" + GenerateCapacity(itemToAdd) + ",Key=" + itemKey + ",MaxItems=" + MaxItems;
                     Items.Add(itemKey,item);
                     break;
                 case ItemCategory.Food:
                     Position foodPosition = GeneratePosition();
                     FoodType foodType = GenerateFood();
                     itemKey = itemToAdd.ToString() + "/" + foodType.ToString() + "/" + Items.Count;
-                    item = ServerMethod.DownloadingItem.ToString() + ",ItemCategory=" + (int)ItemCategory.Food + ",FoodType=" + (int)foodType + ",X=" + foodPosition.X + ",Y=" + foodPosition.Y + ",Capacity=" + GenerateCapacity(itemToAdd) + ",Key=" + itemKey + ",MaxItems=" + MaxItems;
+                    item = ServerMethod.DownloadingItem.ToString() + "=true,ItemCategory=" + (int)ItemCategory.Food + ",FoodType=" + (int)foodType + ",X=" + foodPosition.X + ",Y=" + foodPosition.Y + ",Capacity=" + GenerateCapacity(itemToAdd) + ",Key=" + itemKey + ",MaxItems=" + MaxItems;
                     Items.Add(itemKey, item);
                     break;
                 case ItemCategory.Shield:
                     Position shieldPosition = GeneratePosition();
                     ShieldType shieldType = GenerateShield();
                     itemKey = itemToAdd.ToString() + "/" + shieldType.ToString() + "/" + Items.Count;
-                    item = ServerMethod.DownloadingItem.ToString() + ",ItemCategory=" + (int)ItemCategory.Shield + ",ShieldType=" + (int)shieldType + ",X=" + shieldPosition.X + ",Y=" + shieldPosition.Y + ",Capacity=" + 100 + ",Key=" + itemKey + ",MaxItems=" + MaxItems;
+                    item = ServerMethod.DownloadingItem.ToString() + "=true,ItemCategory=" + (int)ItemCategory.Shield + ",ShieldType=" + (int)shieldType + ",X=" + shieldPosition.X + ",Y=" + shieldPosition.Y + ",Capacity=" + 100 + ",Key=" + itemKey + ",MaxItems=" + MaxItems;
                     Items.Add(itemKey, item);
                     break;
                 case ItemCategory.Helmet:
                     Position helmetPosition = GeneratePosition();
                     HelmetType helmetType = GenerateHelmet();
                     itemKey = itemToAdd.ToString() + "/" + helmetType.ToString() + "/" + Items.Count;
-                    item = ServerMethod.DownloadingItem.ToString() + ",ItemCategory=" + (int)ItemCategory.Helmet + ",HelmetType=" + (int)helmetType + ",X=" + helmetPosition.X + ",Y=" + helmetPosition.Y + ",Capacity=" + 100 + ",Key=" + itemKey + ",MaxItems=" + MaxItems;
+                    item = ServerMethod.DownloadingItem.ToString() + "=true,ItemCategory=" + (int)ItemCategory.Helmet + ",HelmetType=" + (int)helmetType + ",X=" + helmetPosition.X + ",Y=" + helmetPosition.Y + ",Capacity=" + 100 + ",Key=" + itemKey + ",MaxItems=" + MaxItems;
                     Items.Add(itemKey, item);
                     break;
             }

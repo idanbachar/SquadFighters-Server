@@ -134,6 +134,7 @@ namespace SquadFightersServer
         {
             while (true)
             {
+
                 try
                 {
                     NetworkStream netStream = client.GetStream();
@@ -145,7 +146,10 @@ namespace SquadFightersServer
                     if (message.Contains(ServerMethod.PlayerConnected.ToString()))
                     {
                         CurrentConnectedPlayerName = message.Split(',')[0];
-                        Clients.Add(CurrentConnectedPlayerName, client);
+                        lock (Clients)
+                        {
+                            Clients.Add(CurrentConnectedPlayerName, client);
+                        }
                         SendDataToAllClients(message, client);
 
                         Print(CurrentConnectedPlayerName + " Connected to server.");
@@ -158,7 +162,7 @@ namespace SquadFightersServer
                     }
                     else if (message.Contains(ServerMethod.PlayerData.ToString()))
                     {
-                       // Print(message);
+                        // Print(message);
                         SendDataToAllClients(message, client);
                     }
                     else if (message.Contains(ServerMethod.ShootData.ToString()))
@@ -174,7 +178,10 @@ namespace SquadFightersServer
                     else if (message.Contains(ServerMethod.RemoveItem.ToString()))
                     {
                         string key = message.Split(',')[1];
-                        Map.Items.Remove(key);
+                        lock (Map.Items)
+                        {
+                            Map.Items.Remove(key);
+                        }
                         SendDataToAllClients(message, client);
                         Print(message);
                     }
@@ -182,12 +189,14 @@ namespace SquadFightersServer
                     {
                         string receivedKey = message.Split(',')[2];
                         string receivedCapacityString = "Capacity=" + message.Split(',')[1];
-
-                        Map.Items[receivedKey].Split(',')[5] = receivedCapacityString;
+                        lock (Map.Items)
+                        {
+                            Map.Items[receivedKey].Split(',')[5] = receivedCapacityString;
+                        }
                         SendDataToAllClients(message, client);
                         Print(message);
                     }
- 
+
                 }
                 catch (Exception e)
                 {
@@ -223,7 +232,7 @@ namespace SquadFightersServer
 
 
                     netStream.Flush();
-                    Thread.Sleep(50);
+                    Thread.Sleep(10);
                 }
             }
             catch (Exception e)
