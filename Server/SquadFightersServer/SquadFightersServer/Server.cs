@@ -20,6 +20,7 @@ namespace SquadFightersServer
         private string CurrentConnectedPlayerName;
         private Map Map;
         private string GameTitle;
+        private ServerMethod ServerMethod;
 
         public Server(string ip, int port)
         {
@@ -29,6 +30,7 @@ namespace SquadFightersServer
             CurrentConnectedPlayerName = string.Empty;
             Map = new Map();
             GameTitle = "SquadFighters: BattleRoyale";
+            ServerMethod = ServerMethod.None;
         }
 
         public void Start()
@@ -87,6 +89,7 @@ namespace SquadFightersServer
                 {
                     NetworkStream netStream = client.GetStream();
                     string itemsString = string.Empty;
+
                     foreach (KeyValuePair<string, string> item in Map.Items)
                     {
                         itemsString = item.Value;
@@ -97,16 +100,15 @@ namespace SquadFightersServer
 
                         Print("Sending items data to " + GetPlayerNameByClient(client) + " -> " + itemsString);
 
-                        Thread.Sleep(50);
+                        Thread.Sleep(20);
                     }
-
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine(e.Message);
                 }
 
-                SendOneDataToClient(client,"Load Items Completed");
+                SendOneDataToClient(client, ServerMethod.MapDataDownloadCompleted.ToString());
                 break;
             }
         }
@@ -140,54 +142,59 @@ namespace SquadFightersServer
                     string data = Encoding.ASCII.GetString(bytes);
                     string message = data.Substring(0, data.IndexOf("\0"));
 
-                    if (message.Contains("Connected"))
+                    if (message.Contains(ServerMethod.PlayerConnected.ToString()))
                     {
                         CurrentConnectedPlayerName = message.Split(',')[0];
                         Clients.Add(CurrentConnectedPlayerName, client);
-                        Print(CurrentConnectedPlayerName + " has connected to '" + GameTitle + "' server!");
-                        Clients.Add(CurrentConnectedPlayerName, client);
                         SendDataToAllClients(message, client);
 
+                        Print(CurrentConnectedPlayerName + " Connected to server.");
                         CurrentConnectedPlayerName = string.Empty;
 
                     }
-                    else if(message.Contains("Load Map"))
+                    else if (message == ServerMethod.StartDownloadMapData.ToString())
                     {
                         SendItemsDataToClient(client);
                     }
-                    else if (message.Contains("PlayerName"))
+                    else if (message.Contains(ServerMethod.PlayerData.ToString()))
                     {
+                       // Print(message);
                         SendDataToAllClients(message, client);
                     }
-                    if (message.Contains("Remove Item"))
+                    else if (message.Contains(ServerMethod.ShootData.ToString()))
+                    {
+                        Print(message);
+                        SendDataToAllClients(message, client);
+                    }
+                    else if (message.Contains(ServerMethod.Revive.ToString()))
+                    {
+                        Print(message);
+                        SendDataToAllClients(message, client);
+                    }
+                    else if (message.Contains(ServerMethod.RemoveItem.ToString()))
                     {
                         string key = message.Split(',')[1];
                         Map.Items.Remove(key);
                         SendDataToAllClients(message, client);
+                        Print(message);
                     }
-                    if (message.Contains("Update Item Capacity"))
+                    else if (message.Contains(ServerMethod.UpdateItemCapacity.ToString()))
                     {
                         string receivedKey = message.Split(',')[2];
                         string receivedCapacityString = "Capacity=" + message.Split(',')[1];
 
                         Map.Items[receivedKey].Split(',')[5] = receivedCapacityString;
-                        SendDataToAllClients(message, client);                       
-                    }
-                    if (message.Contains("ShootData"))
-                    {
                         SendDataToAllClients(message, client);
+                        Print(message);
                     }
-                    if (message.Contains("Revive=true"))
-                    {
-                        SendDataToAllClients(message, client);
-                    }
-
-                    Thread.Sleep(70);
+ 
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine(e.Message);
                 }
+
+                Thread.Sleep(20);
             }
         }
 
@@ -216,7 +223,7 @@ namespace SquadFightersServer
 
 
                     netStream.Flush();
-                    Thread.Sleep(30);
+                    Thread.Sleep(50);
                 }
             }
             catch (Exception e)
