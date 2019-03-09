@@ -175,6 +175,11 @@ namespace SquadFightersServer
                         Print(message);
                         SendDataToAllClients(message, client);
                     }
+                    else if (message.Contains(ServerMethod.JoinedMatch.ToString()))
+                    {
+                        Print(message);
+                        SendDataToAllClients(message, client);
+                    }
                     else if (message.Contains(ServerMethod.RemoveItem.ToString()))
                     {
                         string key = message.Split(',')[1];
