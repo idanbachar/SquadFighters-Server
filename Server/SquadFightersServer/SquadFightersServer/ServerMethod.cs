@@ -18,6 +18,7 @@ namespace SquadFightersServer
         Revive,
         PlayerData,
         DownloadingItem,
-        JoinedMatch
+        JoinedMatch,
+        PlayerKilled
     }
 }
