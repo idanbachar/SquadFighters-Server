@@ -16,7 +16,7 @@ namespace SquadFightersServer
         private TcpListener Listener;
         private string ServerIp;
         private int ServerPort;
-        private Dictionary<string, TcpClient> Clients;
+        private Dictionary<string, Player> Clients;
         private string CurrentConnectedPlayerName;
         private Map Map;
         private string GameTitle;
@@ -26,7 +26,7 @@ namespace SquadFightersServer
         {
             ServerIp = ip;
             ServerPort = port;
-            Clients = new Dictionary<string, TcpClient>();
+            Clients = new Dictionary<string, Player>();
             CurrentConnectedPlayerName = string.Empty;
             Map = new Map();
             GameTitle = "SquadFighters: BattleRoyale";
@@ -60,6 +60,7 @@ namespace SquadFightersServer
             {
                 Console.WriteLine("Waiting for connections..");
                 TcpClient client = Listener.AcceptTcpClient();
+
                 string clientIp = ((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString();
 
                 new Thread(() => ReceiveDataFromClient(client)).Start();
@@ -70,15 +71,6 @@ namespace SquadFightersServer
         public void Print(string data)
         {
             Console.WriteLine("<Server>: " + data);
-        }
-
-        public string GetPlayerNameByClient(TcpClient client)
-        {
-            foreach(KeyValuePair<string, TcpClient> otherClient in Clients)
-            {
-                if (client == otherClient.Value) return otherClient.Key;
-            }
-            return string.Empty;
         }
 
         public void SendItemsDataToClient(TcpClient client)
@@ -98,7 +90,7 @@ namespace SquadFightersServer
                         netStream.Write(bytes, 0, bytes.Length);
                         netStream.Flush();
 
-                        Print("Sending items data to " + GetPlayerNameByClient(client) + " -> " + itemsString);
+                        Print("Sending item data to client -> " + itemsString);
 
                         Thread.Sleep(20);
                     }
@@ -130,6 +122,17 @@ namespace SquadFightersServer
             }
         }
 
+        public string GetPlayerNameByClient(TcpClient client)
+        {
+            foreach (KeyValuePair<string, Player> otherClient in Clients)
+            {
+                if (client == otherClient.Value.Client && !otherClient.Value.Client.Connected)
+                    return otherClient.Value.Name;
+            }
+
+            return string.Empty;
+        }
+
         public void ReceiveDataFromClient(TcpClient client)
         {
             while (true)
@@ -148,7 +151,7 @@ namespace SquadFightersServer
                         CurrentConnectedPlayerName = message.Split(',')[0];
                         lock (Clients)
                         {
-                            Clients.Add(CurrentConnectedPlayerName, client);
+                            Clients.Add(CurrentConnectedPlayerName, new Player(client, CurrentConnectedPlayerName));
                         }
                         SendDataToAllClients(message, client);
 
@@ -211,6 +214,8 @@ namespace SquadFightersServer
                 catch (Exception e)
                 {
                     Console.WriteLine(e.Message);
+
+                    DisconnectPlayer(client, GetPlayerNameByClient(client));
                 }
 
                 Thread.Sleep(20);
@@ -230,26 +235,32 @@ namespace SquadFightersServer
 
         public void SendDataToAllClients(string message, TcpClient blackListedClient = null)
         {
-            try
+            foreach (KeyValuePair<string, Player> player in Clients)
             {
-                foreach (KeyValuePair<string, TcpClient> client in Clients)
+                try
                 {
-                    NetworkStream netStream = client.Value.GetStream();
+                    NetworkStream netStream = player.Value.Client.GetStream();
                     byte[] bytes = Encoding.ASCII.GetBytes(message);
 
-                    if(client.Value != blackListedClient)
+                    if (player.Value.Client != blackListedClient)
                         netStream.Write(bytes, 0, bytes.Length);
 
-
-                    netStream.Flush();
-                    Thread.Sleep(10);
                 }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                    //DisconnectPlayer(player.Value.Client, player.Value.Name);
+                }
 
+                Thread.Sleep(10);
+            }
+        }
+
+        public void DisconnectPlayer(TcpClient client, string key)
+        {
+            client.Close();
+            Clients.Remove(key);
+            SendDataToAllClients(ServerMethod.PlayerDisconnected.ToString() + "=true,playerDisconnectedName=" + key);
         }
     }
 }

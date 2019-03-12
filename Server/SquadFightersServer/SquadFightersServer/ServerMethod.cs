@@ -19,6 +19,7 @@ namespace SquadFightersServer
         PlayerData,
         DownloadingItem,
         JoinedMatch,
-        PlayerKilled
+        PlayerKilled,
+        PlayerDisconnected
     }
 }

@@ -49,6 +49,7 @@
     <Compile Include="Map\Items\ItemCategory.cs" />
     <Compile Include="Map\Items\ShieldType.cs" />
     <Compile Include="Map\Map.cs" />
+    <Compile Include="Player.cs" />
     <Compile Include="Position.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
