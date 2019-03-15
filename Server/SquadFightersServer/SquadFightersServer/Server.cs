@@ -215,7 +215,7 @@ namespace SquadFightersServer
                 {
                     Console.WriteLine(e.Message);
 
-                    DisconnectPlayer(client, GetPlayerNameByClient(client));
+                    //DisconnectPlayer(client, GetPlayerNameByClient(client));
                 }
 
                 Thread.Sleep(20);
