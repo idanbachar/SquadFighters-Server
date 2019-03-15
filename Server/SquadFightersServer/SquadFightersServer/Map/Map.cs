@@ -20,7 +20,7 @@ namespace SquadFightersServer
             Random = new Random();
             Width = 5000;
             Height = 5000;
-            MaxItems = Width / 20;
+            MaxItems = Width / 30;
         }
 
         public void Load()

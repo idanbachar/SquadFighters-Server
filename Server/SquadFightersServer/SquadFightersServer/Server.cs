@@ -17,6 +17,7 @@ namespace SquadFightersServer
         private string ServerIp;
         private int ServerPort;
         private Dictionary<string, Player> Clients;
+        private Dictionary<string, int> Teams;
         private string CurrentConnectedPlayerName;
         private Map Map;
         private string GameTitle;
@@ -27,6 +28,10 @@ namespace SquadFightersServer
             ServerIp = ip;
             ServerPort = port;
             Clients = new Dictionary<string, Player>();
+            Teams = new Dictionary<string, int>();
+            Teams.Add("Alpha", 0);
+            Teams.Add("Beta", 0);
+            Teams.Add("Omega", 0);
             CurrentConnectedPlayerName = string.Empty;
             Map = new Map();
             GameTitle = "SquadFighters: BattleRoyale";
@@ -64,7 +69,8 @@ namespace SquadFightersServer
                 string clientIp = ((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString();
 
                 new Thread(() => ReceiveDataFromClient(client)).Start();
- 
+                new Thread(SendTeamsCount).Start();
+
             }
         }
 
@@ -101,6 +107,7 @@ namespace SquadFightersServer
                 }
 
                 SendOneDataToClient(client, ServerMethod.MapDataDownloadCompleted.ToString());
+
                 break;
             }
         }
@@ -133,6 +140,17 @@ namespace SquadFightersServer
             return string.Empty;
         }
 
+        public void SendTeamsCount()
+        {
+            while (true)
+            {
+                string message = ServerMethod.TeamsCounts.ToString() + "=true,Alpha=" + Teams[Team.Alpha.ToString()] + ",Beta=" + Teams[Team.Beta.ToString()] + ",Omega=" + Teams[Team.Omega.ToString()];
+                SendDataToAllClients(message);
+
+                Thread.Sleep(1000);
+            }
+        }
+
         public void ReceiveDataFromClient(TcpClient client)
         {
             while (true)
@@ -157,7 +175,6 @@ namespace SquadFightersServer
 
                         Print(CurrentConnectedPlayerName + " Connected to server.");
                         CurrentConnectedPlayerName = string.Empty;
-
                     }
                     else if (message == ServerMethod.StartDownloadMapData.ToString())
                     {
@@ -180,10 +197,18 @@ namespace SquadFightersServer
                     }
                     else if (message.Contains(ServerMethod.JoinedMatch.ToString()))
                     {
+                        string playerTeam = message.Split(',')[2];
+                        Teams[playerTeam]++;
+
                         Print(message);
                         SendDataToAllClients(message, client);
                     }
                     else if (message.Contains(ServerMethod.PlayerKilled.ToString()))
+                    {
+                        Print(message);
+                        SendDataToAllClients(message, client);
+                    }
+                    else if (message.Contains(ServerMethod.PlayerDrown.ToString()))
                     {
                         Print(message);
                         SendDataToAllClients(message, client);
