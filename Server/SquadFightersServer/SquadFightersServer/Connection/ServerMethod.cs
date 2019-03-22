@@ -22,7 +22,9 @@ namespace SquadFightersServer
         PlayerKilled,
         PlayerDisconnected,
         PlayerDrown,
-        TeamsCounts,
-        ClientCreateItem
+        TeamsPlayersCounts,
+        ClientCreateItem,
+        UpdateSpawnerCoins,
+        TeamsCoinsCount
     }
 }

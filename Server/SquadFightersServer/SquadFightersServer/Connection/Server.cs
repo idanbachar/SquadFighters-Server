@@ -17,7 +17,7 @@ namespace SquadFightersServer
         private string ServerIp;
         private int ServerPort;
         private Dictionary<string, Player> Clients;
-        private Dictionary<string, int> Teams;
+        private Dictionary<string, Team> Teams;
         private string CurrentConnectedPlayerName;
         private Map Map;
         private string GameTitle;
@@ -27,10 +27,10 @@ namespace SquadFightersServer
             ServerIp = ip;
             ServerPort = port;
             Clients = new Dictionary<string, Player>();
-            Teams = new Dictionary<string, int>();
-            Teams.Add("Alpha", 0);
-            Teams.Add("Beta", 0);
-            Teams.Add("Omega", 0);
+            Teams = new Dictionary<string, Team>();
+            Teams.Add("Alpha", new Team(TeamName.Alpha, 0, 0));
+            Teams.Add("Beta", new Team(TeamName.Beta, 0, 0));
+            Teams.Add("Omega", new Team(TeamName.Omega, 0, 0));
             CurrentConnectedPlayerName = string.Empty;
             Map = new Map();
             GameTitle = "SquadFighters: BattleRoyale";
@@ -69,8 +69,8 @@ namespace SquadFightersServer
                 string clientIp = ((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString();
 
                 new Thread(() => ReceiveDataFromClient(client)).Start();
-                new Thread(SendTeamsCount).Start();
-
+                new Thread(SendPlayersInTeamsCount).Start();
+                new Thread(SendCoinsInTeamsCount).Start();
             }
         }
 
@@ -140,14 +140,25 @@ namespace SquadFightersServer
             return string.Empty;
         }
 
-        public void SendTeamsCount()
+        public void SendPlayersInTeamsCount()
         {
             while (true)
             {
-                string message = ServerMethod.TeamsCounts.ToString() + "=true,Alpha=" + Teams[Team.Alpha.ToString()] + ",Beta=" + Teams[Team.Beta.ToString()] + ",Omega=" + Teams[Team.Omega.ToString()];
+                string message = ServerMethod.TeamsPlayersCounts.ToString() + "=true,Alpha=" + Teams[TeamName.Alpha.ToString()].PlayersCount + ",Beta=" + Teams[TeamName.Beta.ToString()].PlayersCount + ",Omega=" + Teams[TeamName.Omega.ToString()].PlayersCount;
                 SendDataToAllClients(message);
 
                 Thread.Sleep(1000);
+            }
+        }
+
+        public void SendCoinsInTeamsCount()
+        {
+            while (true)
+            {
+                string message = ServerMethod.TeamsCoinsCount.ToString() + "=true,Alpha=" + Teams[TeamName.Alpha.ToString()].CoinsCount + ",Beta=" + Teams[TeamName.Beta.ToString()].CoinsCount + ",Omega=" + Teams[TeamName.Omega.ToString()].CoinsCount;
+                SendDataToAllClients(message);
+
+                Thread.Sleep(500);
             }
         }
 
@@ -198,7 +209,7 @@ namespace SquadFightersServer
                     else if (message.Contains(ServerMethod.JoinedMatch.ToString()))
                     {
                         string playerTeam = message.Split(',')[2];
-                        Teams[playerTeam]++;
+                        Teams[playerTeam].AddPlayer();
 
                         Print(message);
                         SendDataToAllClients(message, client);
@@ -212,6 +223,26 @@ namespace SquadFightersServer
                     {
                         Print(message);
                         SendDataToAllClients(message, client);
+                    }
+                    else if (message.Contains(ServerMethod.UpdateSpawnerCoins.ToString()))
+                    {
+                        Print(message);
+
+                        if (message.Contains("AlphaTeam"))
+                        {
+                            int coinsCount = int.Parse(message.Split(',')[1].Split('=')[1]);
+                            Teams["Alpha"].SetCoins(coinsCount);
+                        }
+                        if (message.Contains("BetaTeam"))
+                        {
+                            int coinsCount = int.Parse(message.Split(',')[1].Split('=')[1]);
+                            Teams["Beta"].SetCoins(coinsCount);
+                        }
+                        if (message.Contains("OmegaTeam"))
+                        {
+                            int coinsCount = int.Parse(message.Split(',')[1].Split('=')[1]);
+                            Teams["Omega"].SetCoins(coinsCount);
+                        }
                     }
                     else if (message.Contains(ServerMethod.ClientCreateItem.ToString()))
                     {
