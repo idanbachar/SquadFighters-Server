@@ -216,7 +216,7 @@ namespace SquadFightersServer
                     else if (message.Contains(ServerMethod.ClientCreateItem.ToString()))
                     {
                         Print(message);
-                        //SendDataToAllClients(message, client);
+                        SendDataToAllClients(message, client);
                     }
                     else if (message.Contains(ServerMethod.RemoveItem.ToString()))
                     {
