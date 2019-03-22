@@ -21,7 +21,6 @@ namespace SquadFightersServer
         private string CurrentConnectedPlayerName;
         private Map Map;
         private string GameTitle;
-        private ServerMethod ServerMethod;
 
         public Server(string ip, int port)
         {
@@ -35,7 +34,6 @@ namespace SquadFightersServer
             CurrentConnectedPlayerName = string.Empty;
             Map = new Map();
             GameTitle = "SquadFighters: BattleRoyale";
-            ServerMethod = ServerMethod.None;
         }
 
         public void Start()
@@ -44,10 +42,12 @@ namespace SquadFightersServer
             {
                 Listener = new TcpListener(IPAddress.Parse(ServerIp), ServerPort);
                 Listener.Start();
+
+                Console.WriteLine(GameTitle);
                 Console.WriteLine("Server Started in " + ServerIp + ":" + ServerPort);
 
                 //Load Map:
-                Map.Load();
+                Map.LoadItems();
                  
                 new Thread(WaitForConnections).Start();
                 new Thread(Chat).Start();
@@ -212,6 +212,11 @@ namespace SquadFightersServer
                     {
                         Print(message);
                         SendDataToAllClients(message, client);
+                    }
+                    else if (message.Contains(ServerMethod.ClientCreateItem.ToString()))
+                    {
+                        Print(message);
+                        //SendDataToAllClients(message, client);
                     }
                     else if (message.Contains(ServerMethod.RemoveItem.ToString()))
                     {

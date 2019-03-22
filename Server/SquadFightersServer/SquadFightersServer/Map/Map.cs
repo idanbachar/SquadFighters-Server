@@ -23,12 +23,17 @@ namespace SquadFightersServer
             MaxItems = Width / 30;
         }
 
-        public void Load()
+        public void LoadItems()
         {
             Random rndItem = new Random();
 
             for (int i = 0; i < MaxItems; i++)
                 AddItem((ItemCategory)rndItem.Next(3));
+
+            for(int i = 0; i < 1; i++)
+            {
+                AddItem(ItemCategory.Coin);
+            }
         }
 
         public void AddItem(ItemCategory itemToAdd)
@@ -64,6 +69,13 @@ namespace SquadFightersServer
                     HelmetType helmetType = GenerateHelmet();
                     itemKey = itemToAdd.ToString() + "/" + helmetType.ToString() + "/" + Items.Count;
                     item = ServerMethod.DownloadingItem.ToString() + "=true,ItemCategory=" + (int)ItemCategory.Helmet + ",HelmetType=" + (int)helmetType + ",X=" + helmetPosition.X + ",Y=" + helmetPosition.Y + ",Capacity=" + 100 + ",Key=" + itemKey + ",MaxItems=" + MaxItems;
+                    Items.Add(itemKey, item);
+                    break;
+                case ItemCategory.Coin:
+                    Position coinPosition = new Position(100, 500); // GeneratePosition();
+                    CoinType coinType = CoinType.IB;
+                    itemKey = itemToAdd.ToString() + "/" + coinType.ToString() + "/" + Items.Count;
+                    item = ServerMethod.DownloadingItem.ToString() + "=true,ItemCategory=" + (int)ItemCategory.Coin + ",CoinType=" + (int)coinType + ",X=" + coinPosition.X + ",Y=" + coinPosition.Y + ",Capacity=" + 25 + ",Key=" + itemKey + ",MaxItems=" + MaxItems;
                     Items.Add(itemKey, item);
                     break;
             }

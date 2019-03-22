@@ -6,12 +6,8 @@ using System.Threading.Tasks;
 
 namespace SquadFightersServer
 {
-    public enum ItemCategory
+    public enum CoinType
     {
-        Ammo,
-        Food,
-        Shield,
-        Helmet,
-        Coin
+        IB
     }
 }
