@@ -30,7 +30,7 @@ namespace SquadFightersServer
             for (int i = 0; i < MaxItems; i++)
                 AddItem((ItemCategory)rndItem.Next(3));
 
-            for(int i = 0; i < 1; i++)
+            for(int i = 0; i < 5; i++)
             {
                 AddItem(ItemCategory.Coin);
             }
@@ -72,7 +72,7 @@ namespace SquadFightersServer
                     Items.Add(itemKey, item);
                     break;
                 case ItemCategory.Coin:
-                    Position coinPosition = new Position(100, 500); // GeneratePosition();
+                    Position coinPosition = GeneratePosition();
                     CoinType coinType = CoinType.IB;
                     itemKey = itemToAdd.ToString() + "/" + coinType.ToString() + "/" + Items.Count;
                     item = ServerMethod.DownloadingItem.ToString() + "=true,ItemCategory=" + (int)ItemCategory.Coin + ",CoinType=" + (int)coinType + ",X=" + coinPosition.X + ",Y=" + coinPosition.Y + ",Capacity=" + 25 + ",Key=" + itemKey + ",MaxItems=" + MaxItems;
