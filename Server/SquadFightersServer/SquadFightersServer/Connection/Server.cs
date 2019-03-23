@@ -247,7 +247,11 @@ namespace SquadFightersServer
                     else if (message.Contains(ServerMethod.ClientCreateItem.ToString()))
                     {
                         Print(message);
-                        SendDataToAllClients(message, client);
+
+                        int playerX = int.Parse(message.Split(',')[1].Split('=')[1]);
+                        int playerY = int.Parse(message.Split(',')[2].Split('=')[1]);
+                        int coinsCount = int.Parse(message.Split(',')[3].Split('=')[1]);
+                        new Thread(() => CreateDroppedCoins(playerX, playerY, coinsCount)).Start();
                     }
                     else if (message.Contains(ServerMethod.RemoveItem.ToString()))
                     {
@@ -280,6 +284,21 @@ namespace SquadFightersServer
                 }
 
                 Thread.Sleep(20);
+            }
+        }
+
+        public void CreateDroppedCoins(int playerX, int playerY, int coinsCount)
+        {
+            for(int i = 0; i < coinsCount; i++)
+            {
+                ItemCategory itemToAdd = ItemCategory.Coin;
+                Position coinPosition = new Position(playerX + 40 * i, playerY + 100); //GeneratePosition();
+                CoinType coinType = CoinType.IB;
+                string itemKey = itemToAdd.ToString() + "/" + coinType.ToString() + "/Dropped_" + Map.Items.Count;
+                string item = ServerMethod.DownloadDroppedCoins.ToString() + "=true,ItemCategory=" + (int)ItemCategory.Coin + ",CoinType=" + (int)coinType + ",X=" + coinPosition.X + ",Y=" + coinPosition.Y + ",Capacity=" + 25 + ",Key=" + itemKey + ",MaxItems=" + Map.MaxItems;
+                Map.Items.Add(itemKey, item);
+
+                SendDataToAllClients(item);
             }
         }
 

@@ -12,7 +12,7 @@ namespace SquadFightersServer
         private Random Random;
         public int Width;
         public int Height;
-        private int MaxItems;
+        public int MaxItems;
 
         public Map()
         {
@@ -33,6 +33,19 @@ namespace SquadFightersServer
             for(int i = 0; i < 5; i++)
             {
                 AddItem(ItemCategory.Coin);
+            }
+        }
+
+        public void AddCoinsTest()
+        {
+            for (int i = 0; i < 5; i++)
+            {
+                ItemCategory itemToAdd = ItemCategory.Coin;
+                Position coinPosition = new Position(100 + 40 * i, 500); //GeneratePosition();
+                CoinType coinType = CoinType.IB;
+                string itemKey = itemToAdd.ToString() + "/" + coinType.ToString() + "/" + Items.Count;
+                string item = ServerMethod.DownloadDroppedCoins.ToString() + "=true,ItemCategory=" + (int)ItemCategory.Coin + ",CoinType=" + (int)coinType + ",X=" + coinPosition.X + ",Y=" + coinPosition.Y + ",Capacity=" + 25 + ",Key=" + itemKey + ",MaxItems=" + MaxItems;
+                Items.Add(itemKey, item);
             }
         }
 
