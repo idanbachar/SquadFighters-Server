@@ -214,6 +214,13 @@ namespace SquadFightersServer
                         Print(message);
                         SendDataToAllClients(message, client);
                     }
+                    else if (message.Contains(ServerMethod.PlayerPopupMessage.ToString()))
+                    {
+                        string popup = message.Split(',')[1].Split('=')[1];
+
+                        Print(popup);
+                        SendDataToAllClients(message);
+                    }
                     else if (message.Contains(ServerMethod.PlayerKilled.ToString()))
                     {
                         Print(message);
@@ -260,7 +267,7 @@ namespace SquadFightersServer
                         {
                             Map.Items.Remove(key);
                         }
-                        SendDataToAllClients(message, client);
+                        SendDataToAllClients(message);
                         Print(message);
                     }
                     else if (message.Contains(ServerMethod.UpdateItemCapacity.ToString()))
@@ -292,9 +299,9 @@ namespace SquadFightersServer
             for(int i = 0; i < coinsCount; i++)
             {
                 ItemCategory itemToAdd = ItemCategory.Coin;
-                Position coinPosition = new Position(playerX + 40 * i, playerY + 100); //GeneratePosition();
+                Position coinPosition = new Position(playerX + 60 * i, playerY + 100 + new Random().Next(30, 60)); //GeneratePosition();
                 CoinType coinType = CoinType.IB;
-                string itemKey = itemToAdd.ToString() + "/" + coinType.ToString() + "/Dropped_" + Map.Items.Count;
+                string itemKey = itemToAdd.ToString() + "/" + coinType.ToString() + "/" + ((int)Map.Items.Count + 10 + new Random().Next(1000, 5001));
                 string item = ServerMethod.DownloadDroppedCoins.ToString() + "=true,ItemCategory=" + (int)ItemCategory.Coin + ",CoinType=" + (int)coinType + ",X=" + coinPosition.X + ",Y=" + coinPosition.Y + ",Capacity=" + 25 + ",Key=" + itemKey + ",MaxItems=" + Map.MaxItems;
                 Map.Items.Add(itemKey, item);
 

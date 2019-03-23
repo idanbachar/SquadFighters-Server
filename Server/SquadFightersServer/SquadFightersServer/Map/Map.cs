@@ -20,17 +20,17 @@ namespace SquadFightersServer
             Random = new Random();
             Width = 5000;
             Height = 5000;
-            MaxItems = Width / 30;
+            MaxItems = 180;
         }
 
         public void LoadItems()
         {
             Random rndItem = new Random();
 
-            for (int i = 0; i < MaxItems; i++)
+            for (int i = 0; i < 160; i++)
                 AddItem((ItemCategory)rndItem.Next(3));
 
-            for(int i = 0; i < 5; i++)
+            for(int i = 0; i < 20; i++)
             {
                 AddItem(ItemCategory.Coin);
             }
