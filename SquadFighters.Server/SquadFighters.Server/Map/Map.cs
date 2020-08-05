@@ -4,18 +4,19 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SquadFightersServer
-{
-    public class Map
-    {
-        public Dictionary<string, string> Items;
-        private Random Random;
-        public int Width;
-        public int Height;
-        public int MaxItems;
+namespace SquadFighters.Server {
+    public class Map {
 
-        public Map()
-        {
+        public Dictionary<string, string> Items; //מילון פריטים
+        private Random Random; //רנדום
+        public int Width; //רוחב
+        public int Height; //גובה
+        public int MaxItems; //מספר מקסימלי של פריטים
+
+        /// <summary>
+        /// פונקציה היוצרת מפה
+        /// </summary>
+        public Map() {
             Items = new Dictionary<string, string>();
             Random = new Random();
             Width = 5000;
@@ -23,23 +24,25 @@ namespace SquadFightersServer
             MaxItems = 180;
         }
 
-        public void LoadItems()
-        {
+        /// <summary>
+        /// טעינת פריטים
+        /// </summary>
+        public void LoadItems() {
             Random rndItem = new Random();
 
             for (int i = 0; i < 160; i++)
                 AddItem((ItemCategory)rndItem.Next(3));
 
-            for(int i = 0; i < 20; i++)
-            {
+            for (int i = 0; i < 20; i++) {
                 AddItem(ItemCategory.Coin);
             }
         }
 
-        public void AddCoinsTest()
-        {
-            for (int i = 0; i < 5; i++)
-            {
+        /// <summary>
+        /// טסט הוספת מטבעות
+        /// </summary>
+        public void AddCoinsTest() {
+            for (int i = 0; i < 5; i++) {
                 ItemCategory itemToAdd = ItemCategory.Coin;
                 Position coinPosition = new Position(100 + 40 * i, 500); //GeneratePosition();
                 CoinType coinType = CoinType.IB;
@@ -49,19 +52,21 @@ namespace SquadFightersServer
             }
         }
 
-        public void AddItem(ItemCategory itemToAdd)
-        {
+        /// <summary>
+        /// פונקציה המקבלת קטגוריית פריט ומוסיפה אותו
+        /// </summary>
+        /// <param name="itemToAdd"></param>
+        public void AddItem(ItemCategory itemToAdd) {
             string item = string.Empty;
             string itemKey = string.Empty;
 
-            switch (itemToAdd)
-            {
+            switch (itemToAdd) {
                 case ItemCategory.Ammo:
                     Position ammoPosition = GeneratePosition();
                     AmmoType ammoType = GenerateAmmo();
                     itemKey = itemToAdd.ToString() + "/" + ammoType.ToString() + "/" + Items.Count;
                     item = ServerMethod.DownloadingItem.ToString() + "=true,ItemCategory=" + (int)ItemCategory.Ammo + ",AmmoType=" + (int)ammoType + ",X=" + ammoPosition.X + ",Y=" + ammoPosition.Y + ",Capacity=" + GenerateCapacity(itemToAdd) + ",Key=" + itemKey + ",MaxItems=" + MaxItems;
-                    Items.Add(itemKey,item);
+                    Items.Add(itemKey, item);
                     break;
                 case ItemCategory.Food:
                     Position foodPosition = GeneratePosition();
@@ -94,10 +99,13 @@ namespace SquadFightersServer
             }
         }
 
-        public int GenerateCapacity(ItemCategory itemCategory)
-        {
-            switch (itemCategory)
-            {
+        /// <summary>
+        /// פונקציה המקבלת קטגוריית פריט ומייצרת כמויות רנדומליות
+        /// </summary>
+        /// <param name="itemCategory"></param>
+        /// <returns></returns>
+        public int GenerateCapacity(ItemCategory itemCategory) {
+            switch (itemCategory) {
                 case ItemCategory.Ammo:
                     return Random.Next(7, 27);
                 case ItemCategory.Food:
@@ -107,8 +115,11 @@ namespace SquadFightersServer
             }
         }
 
-        public ShieldType GenerateShield()
-        {
+        /// <summary>
+        /// פונקציה המייצרת מגנים רנדומלים
+        /// </summary>
+        /// <returns></returns>
+        public ShieldType GenerateShield() {
             int Number = Random.Next(1000);
 
             if (Number >= 0 && Number <= 400)
@@ -123,10 +134,10 @@ namespace SquadFightersServer
             return ShieldType.Shield_Legendery;
         }
 
-        public HelmetType GenerateHelmet() { return (HelmetType)(Random.Next(4)); }
-        public AmmoType GenerateAmmo() { return (AmmoType)(Random.Next(1, 2)); }
-        public FoodType GenerateFood() { return (FoodType)(Random.Next(3)); }
-        public Position GeneratePosition() { return new Position(Random.Next(200, Width - 200), Random.Next(200, Height - 200)); }
+        public HelmetType GenerateHelmet() { return (HelmetType)(Random.Next(4)); } //פונקציה המייצרת קסדה רנדומלית
+        public AmmoType GenerateAmmo() { return (AmmoType)(Random.Next(1, 2)); } //פונקציה המייצרת תחמושת רנדומלית
+        public FoodType GenerateFood() { return (FoodType)(Random.Next(3)); } //פונקציה המייצרת אוכל רנדומלי
+        public Position GeneratePosition() { return new Position(Random.Next(200, Width - 200), Random.Next(200, Height - 200)); } //פונקציה המייצרת מיקום רנדומלי
 
     }
 }

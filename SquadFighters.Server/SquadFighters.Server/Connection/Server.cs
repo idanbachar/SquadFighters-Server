@@ -9,21 +9,24 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SquadFightersServer
-{
-    public class Server
-    {
-        private TcpListener Listener;
-        private string ServerIp;
-        private int ServerPort;
-        private Dictionary<string, Player> Clients;
-        private Dictionary<string, Team> Teams;
-        private string CurrentConnectedPlayerName;
-        private Map Map;
-        private string GameTitle;
+namespace SquadFighters.Server {
+    public class Server {
 
-        public Server(string ip, int port)
-        {
+        private TcpListener Listener; //מאזין לחיבורים
+        private string ServerIp; //סרבר אייפי
+        private int ServerPort; //סרבר פורט
+        private Dictionary<string, Player> Clients; //מילון שחקנים
+        private Dictionary<string, Team> Teams; //מילון קבוצות
+        private string CurrentConnectedPlayerName; //שם של השחקן הנוכחי המחובר
+        private Map Map; //מפה
+        private string GameTitle; //שם משחק
+
+        /// <summary>
+        /// פונקציה המקבלת אייפי ופורט ויוצרת שרת
+        /// </summary>
+        /// <param name="ip"></param>
+        /// <param name="port"></param>
+        public Server(string ip, int port) {
             ServerIp = ip;
             ServerPort = port;
             Clients = new Dictionary<string, Player>();
@@ -36,10 +39,11 @@ namespace SquadFightersServer
             GameTitle = "SquadFighters: BattleRoyale";
         }
 
-        public void Start()
-        {
-            try
-            {
+        /// <summary>
+        /// פונקציה המתחילה את השרת
+        /// </summary>
+        public void Start() {
+            try {
                 Listener = new TcpListener(IPAddress.Parse(ServerIp), ServerPort);
                 Listener.Start();
 
@@ -48,21 +52,21 @@ namespace SquadFightersServer
 
                 //Load Map:
                 Map.LoadItems();
-                 
+
                 new Thread(WaitForConnections).Start();
                 new Thread(Chat).Start();
 
             }
-            catch (Exception e)
-            {
+            catch (Exception e) {
                 Console.WriteLine(e.Message);
             }
         }
 
-        public void WaitForConnections()
-        {
-            while (true)
-            {
+        /// <summary>
+        /// פונקציה המחכה לחיבורים מהקליינט
+        /// </summary>
+        public void WaitForConnections() {
+            while (true) {
                 Console.WriteLine("Waiting for connections..");
                 TcpClient client = Listener.AcceptTcpClient();
 
@@ -74,22 +78,25 @@ namespace SquadFightersServer
             }
         }
 
-        public void Print(string data)
-        {
+        /// <summary>
+        /// פונקציה המדפיסה מידע על השרת
+        /// </summary>
+        /// <param name="data"></param>
+        public void Print(string data) {
             Console.WriteLine("<Server>: " + data);
         }
 
-        public void SendItemsDataToClient(TcpClient client)
-        {
-            while (true)
-            {
-                try
-                {
+        /// <summary>
+        /// פונקציה א-סינכרונית השולחת מידע של השחקנים/והמפה לכל שאר הקליינטים
+        /// </summary>
+        /// <param name="client"></param>
+        public void SendItemsDataToClient(TcpClient client) {
+            while (true) {
+                try {
                     NetworkStream netStream = client.GetStream();
                     string itemsString = string.Empty;
 
-                    foreach (KeyValuePair<string, string> item in Map.Items)
-                    {
+                    foreach (KeyValuePair<string, string> item in Map.Items) {
                         itemsString = item.Value;
 
                         byte[] bytes = Encoding.ASCII.GetBytes(itemsString);
@@ -101,8 +108,7 @@ namespace SquadFightersServer
                         Thread.Sleep(20);
                     }
                 }
-                catch (Exception e)
-                {
+                catch (Exception e) {
                     Console.WriteLine(e.Message);
                 }
 
@@ -112,10 +118,13 @@ namespace SquadFightersServer
             }
         }
 
-        public void SendOneDataToClient(TcpClient client, string data)
-        {
-            try
-            {
+        /// <summary>
+        /// פונקציה המקבלת דאטה וקליינט ושולחת לו מידע
+        /// </summary>
+        /// <param name="client"></param>
+        /// <param name="data"></param>
+        public void SendOneDataToClient(TcpClient client, string data) {
+            try {
                 NetworkStream netStream = client.GetStream();
                 byte[] bytes = Encoding.ASCII.GetBytes(data);
                 netStream.Write(bytes, 0, bytes.Length);
@@ -123,16 +132,18 @@ namespace SquadFightersServer
 
                 Print(data);
             }
-            catch (Exception)
-            {
+            catch (Exception) {
 
             }
         }
 
-        public string GetPlayerNameByClient(TcpClient client)
-        {
-            foreach (KeyValuePair<string, Player> otherClient in Clients)
-            {
+        /// <summary>
+        /// פונקציה  המקבלת קליינט ומחזירה את שם השחקן
+        /// </summary>
+        /// <param name="client"></param>
+        /// <returns></returns>
+        public string GetPlayerNameByClient(TcpClient client) {
+            foreach (KeyValuePair<string, Player> otherClient in Clients) {
                 if (client == otherClient.Value.Client && !otherClient.Value.Client.Connected)
                     return otherClient.Value.Name;
             }
@@ -140,10 +151,11 @@ namespace SquadFightersServer
             return string.Empty;
         }
 
-        public void SendPlayersInTeamsCount()
-        {
-            while (true)
-            {
+        /// <summary>
+        /// פונקציה השולחת מידע על כמות שחקנים בכל קבוצה
+        /// </summary>
+        public void SendPlayersInTeamsCount() {
+            while (true) {
                 string message = ServerMethod.TeamsPlayersCounts.ToString() + "=true,Alpha=" + Teams[TeamName.Alpha.ToString()].PlayersCount + ",Beta=" + Teams[TeamName.Beta.ToString()].PlayersCount + ",Omega=" + Teams[TeamName.Omega.ToString()].PlayersCount;
                 SendDataToAllClients(message);
 
@@ -151,10 +163,11 @@ namespace SquadFightersServer
             }
         }
 
-        public void SendCoinsInTeamsCount()
-        {
-            while (true)
-            {
+        /// <summary>
+        /// פונקציה השולחת כמות מטבעות של כל קבוצה
+        /// </summary>
+        public void SendCoinsInTeamsCount() {
+            while (true) {
                 string message = ServerMethod.TeamsCoinsCount.ToString() + "=true,Alpha=" + Teams[TeamName.Alpha.ToString()].CoinsCount + ",Beta=" + Teams[TeamName.Beta.ToString()].CoinsCount + ",Omega=" + Teams[TeamName.Omega.ToString()].CoinsCount;
                 SendDataToAllClients(message);
 
@@ -162,24 +175,23 @@ namespace SquadFightersServer
             }
         }
 
-        public void ReceiveDataFromClient(TcpClient client)
-        {
-            while (true)
-            {
+        /// <summary>
+        /// פונקציה א-סינכרונית המקבלת קליינט ומקבלת את כל המידע עליו מהמשחק ומעדכנת בהתאם ושולחת נתונים לשאר השחקנים
+        /// </summary>
+        /// <param name="client"></param>
+        public void ReceiveDataFromClient(TcpClient client) {
+            while (true) {
 
-                try
-                {
+                try {
                     NetworkStream netStream = client.GetStream();
                     byte[] bytes = new byte[1024];
                     netStream.Read(bytes, 0, bytes.Length);
                     string data = Encoding.ASCII.GetString(bytes);
                     string message = data.Substring(0, data.IndexOf("\0"));
 
-                    if (message.Contains(ServerMethod.PlayerConnected.ToString()))
-                    {
+                    if (message.Contains(ServerMethod.PlayerConnected.ToString())) {
                         CurrentConnectedPlayerName = message.Split(',')[0];
-                        lock (Clients)
-                        {
+                        lock (Clients) {
                             Clients.Add(CurrentConnectedPlayerName, new Player(client, CurrentConnectedPlayerName));
                         }
                         SendDataToAllClients(message, client);
@@ -187,72 +199,59 @@ namespace SquadFightersServer
                         Print(CurrentConnectedPlayerName + " Connected to server.");
                         CurrentConnectedPlayerName = string.Empty;
                     }
-                    else if (message == ServerMethod.StartDownloadMapData.ToString())
-                    {
+                    else if (message == ServerMethod.StartDownloadMapData.ToString()) {
                         SendItemsDataToClient(client);
                     }
-                    else if (message.Contains(ServerMethod.PlayerData.ToString()))
-                    {
+                    else if (message.Contains(ServerMethod.PlayerData.ToString())) {
                         // Print(message);
                         SendDataToAllClients(message, client);
                     }
-                    else if (message.Contains(ServerMethod.ShootData.ToString()))
-                    {
+                    else if (message.Contains(ServerMethod.ShootData.ToString())) {
                         Print(message);
                         SendDataToAllClients(message, client);
                     }
-                    else if (message.Contains(ServerMethod.Revive.ToString()))
-                    {
+                    else if (message.Contains(ServerMethod.Revive.ToString())) {
                         Print(message);
                         SendDataToAllClients(message, client);
                     }
-                    else if (message.Contains(ServerMethod.JoinedMatch.ToString()))
-                    {
+                    else if (message.Contains(ServerMethod.JoinedMatch.ToString())) {
                         string playerTeam = message.Split(',')[2];
                         Teams[playerTeam].AddPlayer();
 
                         Print(message);
                         SendDataToAllClients(message, client);
                     }
-                    else if (message.Contains(ServerMethod.PlayerPopupMessage.ToString()))
-                    {
+                    else if (message.Contains(ServerMethod.PlayerPopupMessage.ToString())) {
                         string popup = message.Split(',')[1].Split('=')[1];
 
                         Print(popup);
                         SendDataToAllClients(message);
                     }
-                    else if (message.Contains(ServerMethod.PlayerKilled.ToString()))
-                    {
+                    else if (message.Contains(ServerMethod.PlayerKilled.ToString())) {
                         Print(message);
                         SendDataToAllClients(message, client);
                     }
-                    else if (message.Contains(ServerMethod.PlayerDrown.ToString()))
-                    {
+                    else if (message.Contains(ServerMethod.PlayerDrown.ToString())) {
                         Print(message);
                         SendDataToAllClients(message, client);
                     }
-                    else if (message.Contains(ServerMethod.UpdateSpawnerCoins.ToString()))
-                    {
+                    else if (message.Contains(ServerMethod.UpdateSpawnerCoins.ToString())) {
                         Print(message);
 
-                        if (message.Contains("AlphaTeam"))
-                        {
+                        if (message.Contains("AlphaTeam")) {
                             int coinsCount = int.Parse(message.Split(',')[1].Split('=')[1]);
                             Teams["Alpha"].SetCoins(coinsCount);
                         }
-                        if (message.Contains("BetaTeam"))
-                        {
+                        if (message.Contains("BetaTeam")) {
                             int coinsCount = int.Parse(message.Split(',')[1].Split('=')[1]);
                             Teams["Beta"].SetCoins(coinsCount);
                         }
-                        if (message.Contains("OmegaTeam"))
-                        {
+                        if (message.Contains("OmegaTeam")) {
                             int coinsCount = int.Parse(message.Split(',')[1].Split('=')[1]);
                             Teams["Omega"].SetCoins(coinsCount);
                         }
                     }
-                    else if (message.Contains(ServerMethod.ClientCreateItem.ToString()))
-                    {
+                    else if (message.Contains(ServerMethod.ClientCreateItem.ToString())) {
                         Print(message);
 
                         int playerX = int.Parse(message.Split(',')[1].Split('=')[1]);
@@ -260,22 +259,18 @@ namespace SquadFightersServer
                         int coinsCount = int.Parse(message.Split(',')[3].Split('=')[1]);
                         new Thread(() => CreateDroppedCoins(playerX, playerY, coinsCount)).Start();
                     }
-                    else if (message.Contains(ServerMethod.RemoveItem.ToString()))
-                    {
+                    else if (message.Contains(ServerMethod.RemoveItem.ToString())) {
                         string key = message.Split(',')[1];
-                        lock (Map.Items)
-                        {
+                        lock (Map.Items) {
                             Map.Items.Remove(key);
                         }
                         SendDataToAllClients(message);
                         Print(message);
                     }
-                    else if (message.Contains(ServerMethod.UpdateItemCapacity.ToString()))
-                    {
+                    else if (message.Contains(ServerMethod.UpdateItemCapacity.ToString())) {
                         string receivedKey = message.Split(',')[2];
                         string receivedCapacityString = "Capacity=" + message.Split(',')[1];
-                        lock (Map.Items)
-                        {
+                        lock (Map.Items) {
                             Map.Items[receivedKey].Split(',')[5] = receivedCapacityString;
                         }
                         SendDataToAllClients(message, client);
@@ -283,8 +278,7 @@ namespace SquadFightersServer
                     }
 
                 }
-                catch (Exception e)
-                {
+                catch (Exception e) {
                     Console.WriteLine(e.Message);
 
                     //DisconnectPlayer(client, GetPlayerNameByClient(client));
@@ -294,10 +288,14 @@ namespace SquadFightersServer
             }
         }
 
-        public void CreateDroppedCoins(int playerX, int playerY, int coinsCount)
-        {
-            for(int i = 0; i < coinsCount; i++)
-            {
+        /// <summary>
+        /// פונקציה המקבלת מיקום של שחקן וכמות מטבעות ושולחת עדכון על נפילת מטבע
+        /// </summary>
+        /// <param name="playerX"></param>
+        /// <param name="playerY"></param>
+        /// <param name="coinsCount"></param>
+        public void CreateDroppedCoins(int playerX, int playerY, int coinsCount) {
+            for (int i = 0; i < coinsCount; i++) {
                 ItemCategory itemToAdd = ItemCategory.Coin;
                 Position coinPosition = new Position(playerX + 60 * i, playerY + 100 + new Random().Next(30, 60)); //GeneratePosition();
                 CoinType coinType = CoinType.IB;
@@ -309,23 +307,26 @@ namespace SquadFightersServer
             }
         }
 
-        public void Chat()
-        {
+        /// <summary>
+        /// צ'אט
+        /// </summary>
+        public void Chat() {
 
-            while (true)
-            {
+            while (true) {
                 string message = Console.ReadLine();
                 SendDataToAllClients(message);
                 Console.WriteLine("<Server>: " + message);
             }
         }
 
-        public void SendDataToAllClients(string message, TcpClient blackListedClient = null)
-        {
-            foreach (KeyValuePair<string, Player> player in Clients)
-            {
-                try
-                {
+        /// <summary>
+        /// פונקציה המקבלת הודעה ושולחת לכל השחקנים
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="blackListedClient"></param>
+        public void SendDataToAllClients(string message, TcpClient blackListedClient = null) {
+            foreach (KeyValuePair<string, Player> player in Clients) {
+                try {
                     NetworkStream netStream = player.Value.Client.GetStream();
                     byte[] bytes = Encoding.ASCII.GetBytes(message);
 
@@ -333,8 +334,7 @@ namespace SquadFightersServer
                         netStream.Write(bytes, 0, bytes.Length);
 
                 }
-                catch (Exception e)
-                {
+                catch (Exception e) {
                     Console.WriteLine(e.Message);
                     //DisconnectPlayer(player.Value.Client, player.Value.Name);
                 }
@@ -343,8 +343,12 @@ namespace SquadFightersServer
             }
         }
 
-        public void DisconnectPlayer(TcpClient client, string key)
-        {
+        /// <summary>
+        /// פונקציה המקבלת קליינט ומפתח למילון, ומוחקת את החיבור איתו
+        /// </summary>
+        /// <param name="client"></param>
+        /// <param name="key"></param>
+        public void DisconnectPlayer(TcpClient client, string key) {
             client.Close();
             Clients.Remove(key);
             SendDataToAllClients(ServerMethod.PlayerDisconnected.ToString() + "=true,playerDisconnectedName=" + key);

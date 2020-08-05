@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SquadFightersServer
-{
-    public enum CoinType
-    {
-        IB
+namespace SquadFighters.Server {
+    public enum AmmoType {
+        Bullet, //כדור
+        Rocket //רקטה
     }
 }

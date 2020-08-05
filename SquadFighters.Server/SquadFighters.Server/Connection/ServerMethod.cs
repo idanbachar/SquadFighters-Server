@@ -4,10 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SquadFightersServer
-{
-    public enum ServerMethod
-    {
+namespace SquadFighters.Server {
+    public enum ServerMethod {
         None,
         StartDownloadMapData,
         MapDataDownloadCompleted,
