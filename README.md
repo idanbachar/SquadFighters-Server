@@ -1,7 +1,5 @@
 # Squad Fighters
 
-<img width="300" src="https://assets.gitlab-static.net/uploads/-/system/project/avatar/10823701/SquadFighters.png?width=64">
-
 ## Server
 
 This is the project of **Squad Fighters** server.
