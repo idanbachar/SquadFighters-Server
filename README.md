@@ -2,11 +2,7 @@
 
 ## Server
 
-This is the project of **Squad Fighters** server.
-<br/>
-This project handles the multiplayer stuff for playing with other people
-<br/>
-using TCP-CLIENT.
+This is project of Squad Fighters Server. This project controls the multiplayer stuff to make you play with your friends using tcp client.
 
 ## Credits
 
